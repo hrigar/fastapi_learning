@@ -78,21 +78,21 @@ def update_post(post: Post, id: int):
 def alchemy(db: Session = Depends(get_db)):
     return {"status":"success"}
 
-try:
-    conn = psycopg2.connect(
-    dbname='fastapi',
-    user='postgres',
-    password='madman02',
-    host='localhost',  
-    port='5432',  
-    cursor_factory=RealDictCursor
-    )
-    cur = conn.cursor()
-    print('connection esstablished')
+# try:
+#     conn = psycopg2.connect(
+#     dbname='fastapi',
+#     user='postgres',
+#     password='****',
+#     host='localhost',  
+#     port='5432',  
+#     cursor_factory=RealDictCursor
+#     )
+#     cur = conn.cursor()
+#     print('connection esstablished')
 
-except Exception as error:
-    print('connection failed')
-    print("error: ", error)
+# except Exception as error:
+#     print('connection failed')
+#     print("error: ", error)
 
 
 # # Closing the connection
