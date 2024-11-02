@@ -1,14 +1,26 @@
 # print('hekko hrishi') 
 
-from fastapi import Body, FastAPI, status, HTTPException
+from fastapi import Body, FastAPI, status, HTTPException, Depends
 from pydantic import BaseModel
 import json
 from typing import List
 from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
-
+from .database import engine, SessionLocal
+from sqlalchemy.orm import Session
+from . import models
 app = FastAPI()
+
+
+models.Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 class Post(BaseModel):
     title : str
@@ -62,11 +74,15 @@ def update_post(post: Post, id: int):
     return updated_post
     
 
+@app.get("/sqlalchemy")
+def alchemy(db: Session = Depends(get_db)):
+    return {"status":"success"}
+
 try:
     conn = psycopg2.connect(
     dbname='fastapi',
     user='postgres',
-    password='****',
+    password='madman02',
     host='localhost',  
     port='5432',  
     cursor_factory=RealDictCursor
@@ -80,6 +96,6 @@ except Exception as error:
 
 
 # # Closing the connection
-cur.close()
-conn.close()
-print("con closed")
+# cur.close()
+# conn.close()
+# print("con closed")
