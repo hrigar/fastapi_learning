@@ -33,6 +33,33 @@ def create_post(post: Post):
     conn.commit()
     return result
 
+@app.get("/posts/{id}")
+def get_post(id: int):
+    cur.execute("""select * from posts where id = %s """, (id,))
+    result = cur.fetchone()
+    conn.commit()
+
+    return result
+
+@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(id: int):
+    cur.execute("""delete from posts where id = %s returning *""", (id,))
+    deleted_post = cur.fetchone()
+
+    if not deleted_post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    conn.commit()
+    return deleted_post
+
+@app.put("/posts/{id}")
+def update_post(post: Post, id: int):
+    cur.execute("""update posts set title = %s, content = %s where id = %s returning *""", (post.title, post.content, id))
+    updated_post = cur.fetchone()
+
+    if not updated_post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="post not found")
+    conn.commit()
+    return updated_post
     
 
 try:
