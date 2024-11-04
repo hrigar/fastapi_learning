@@ -12,32 +12,30 @@ from psycopg2.extras import RealDictCursor
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 from . import models
-
+from .schemas import Post, PostResponse
 app = FastAPI()
 
 
 models.Base.metadata.create_all(bind=engine)
 
 
-class Post(BaseModel):
-    title : str
-    content :str
+
 
 @app.get("/")
 async def root():
     return {"name":"madman","lang":"fastapi",'happy':"no"}
 
 
-@app.get("/posts")
+@app.get("/posts",response_model=list[PostResponse])
 def get_posts(db: Session = Depends(get_db)):
     # posts = cur.execute("SELECT * FROM posts")
     # results = cur.fetchall()
     posts = db.query(models.Post).all()
     # print(posts)
-    return {"data": posts}
+    return  posts
 
 
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED, response_model=PostResponse)
 def create_post(post: Post, db: Session = Depends(get_db)):
     # cur.execute("""INSERT INTO posts (title, content) values (%s,%s) returning *""",(post.title, post.content))
     # result = cur.fetchone()
@@ -46,9 +44,9 @@ def create_post(post: Post, db: Session = Depends(get_db)):
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-    return {"data": new_post}
+    return  new_post
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=PostResponse)
 def get_post(id: int, db: Session = Depends(get_db)):
     # cur.execute("""select * from posts where id = %s """, (id,))
     # result = cur.fetchone()
@@ -56,7 +54,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No post found with id {id}")
-    return {"Post detail": post}
+    return post
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db)):
@@ -72,7 +70,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@app.put("/posts/{id}")
+@app.put("/posts/{id}",response_model=PostResponse)
 def update_post(post_toupdate: Post, id: int, db: Session = Depends(get_db)):
     # cur.execute("""update posts set title = %s, content = %s where id = %s returning *""", (post.title, post.content, id))
     # updated_post = cur.fetchone()
