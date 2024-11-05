@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+import string
+from pydantic import BaseModel, EmailStr
 from sqlalchemy import Boolean
 
 class Post(BaseModel):
@@ -11,3 +12,9 @@ class PostResponse(Post):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class UserRespone(BaseModel):
+    email: EmailStr
+    id: int
+    username: str
